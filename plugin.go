@@ -80,8 +80,9 @@ func (p *Plugin) Name() string {
 func (p *Plugin) RPC() any {
 	return &rpc{
 		fifo: impl.NewOtterImpl(
-			p.config.Ttl,
 			p.config.MaxCacheSize,
+			p.config.Expiring,
+			p.config.RefreshInterval,
 		),
 	}
 }

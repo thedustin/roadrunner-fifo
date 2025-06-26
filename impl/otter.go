@@ -12,12 +12,12 @@ type otterImpl struct {
 
 var _ Fifo = (*otterImpl)(nil)
 
-func NewOtterImpl(ttl time.Duration, sizeInBytes int) Fifo {
+func NewOtterImpl(sizeInBytes int, expiration time.Duration, refreshInterval time.Duration) Fifo {
 	return &otterImpl{
 		cache: otter.Must(&otter.Options[string, string]{
 			MaximumSize:       sizeInBytes,
-			ExpiryCalculator:  otter.ExpiryAccessing[string, string](ttl),    // Reset timer on reads/writes
-			RefreshCalculator: otter.RefreshWriting[string, string](ttl / 2), // Refresh after writes
+			ExpiryCalculator:  otter.ExpiryAccessing[string, string](expiration),     // Reset timer on reads/writes
+			RefreshCalculator: otter.RefreshWriting[string, string](refreshInterval), // Refresh after writes
 			Weigher: func(key string, value string) uint32 {
 				return uint32(len(key) + len(value))
 			},
