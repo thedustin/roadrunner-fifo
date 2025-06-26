@@ -1,4 +1,4 @@
-# [Roadrunner FIFO Plugin](https://github.com/thedustin/roadrunner-s3fifo)
+# [Roadrunner FIFO Plugin](https://github.com/thedustin/roadrunner-fifo)
 
 by [Dustin Breuer](https://github.com/thedustin).
 

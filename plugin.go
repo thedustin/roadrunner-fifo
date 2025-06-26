@@ -3,6 +3,7 @@ package fifo
 import (
 	"context"
 	"github.com/roadrunner-server/errors"
+	"github.com/thedustin/roadrunner-fifo/impl"
 	"go.uber.org/zap"
 )
 
@@ -22,6 +23,9 @@ type Logger interface {
 }
 
 type Plugin struct {
+	config *Config
+
+	log *zap.Logger
 }
 
 func (p *Plugin) Init(cfg Configurer, log Logger) error {
@@ -31,11 +35,24 @@ func (p *Plugin) Init(cfg Configurer, log Logger) error {
 		return errors.E(errors.Disabled)
 	}
 
+	p.log = log.NamedLogger(pluginName)
+
+	err := cfg.UnmarshalKey(pluginName, &p.config)
+	if err != nil {
+		return errors.E(op, err)
+	}
+
+	err = p.config.InitDefaults()
+	if err != nil {
+		return errors.E(op, err)
+	}
+
 	return nil
 }
 
 func (p *Plugin) Serve() chan error {
 	errCh := make(chan error, 1)
+	const op = errors.Op("fifo_plugin_serve")
 
 	// Here you would typically start your plugin's main logic
 	// For example, starting a server or a worker that processes tasks
@@ -57,4 +74,14 @@ func (p *Plugin) Stop(ctx context.Context) error {
 
 func (p *Plugin) Name() string {
 	return pluginName
+}
+
+// RPC returns associated rpc service.
+func (p *Plugin) RPC() any {
+	return &rpc{
+		fifo: impl.NewOtterImpl(
+			p.config.Ttl,
+			p.config.MaxCacheSize,
+		),
+	}
 }
